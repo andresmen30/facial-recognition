@@ -1,0 +1,20 @@
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui" xmlns:h="http://java.sun.com/jsf/html">
+
+    <div class="footer">
+        <h:form>
+            <ui:param name="loginPath" value="/login.xhtml"/>
+            <p:stack icon="/stack/folder.png" expanded="true" rendered="#{loginPath eq facesContext.externalContext.requestServletPath}">
+                <p:menuitem value="Auditoria" icon="/stack/audit.png" immediate="true"
+                            process="@this" action="#{loginController.redirect('/audit')}"/>
+            </p:stack>
+            <p:commandButton type="button"
+                             value="Facial recognition"
+                             styleClass="ui-button-flat"/>
+            <p:graphicImage name="face-scan.gif" width="25" height="25"
+                            library="gif"/>
+        </h:form>
+    </div>
+</ui:composition>

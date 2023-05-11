@@ -1,0 +1,85 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                template="pages/template.xhtml">
+
+    <ui:define name="title">Auditoria</ui:define>
+    <ui:define name="content">
+
+        <h:body onload="#{imageController.clean()}">
+            <p:dataTable value="#{auditController.listFaces}"
+                         var="audit"
+                         first="0"
+                         rowKey="#{audit.id}"
+                         rows="10"
+                         paginator="true"
+                         lazy="true"
+                         paginatorPosition="both"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords} registros"
+                         rowsPerPageTemplate="5,10,20"
+                         emptyMessage="No se han encontrado registros">
+                <p:column headerText="Fecha y hora de acceso">
+                    <h:outputText value="#{audit.dateAccess}">
+                        <f:convertDateTime type="localDateTime" pattern="yyyy/MM/dd HH:mm:ss"/>
+                    </h:outputText>
+                </p:column>
+                <p:column headerText="Identificación">
+                    <h:outputText value="#{audit.faceUser.personalInformation.identificationNumber}"/>
+                </p:column>
+                <p:column headerText="Nombre">
+                    <h:outputText value="#{audit.faceUser.personalInformation.firstName} #{audit.faceUser.personalInformation.surName}"/>
+                </p:column>
+                <p:column headerText="Edad">
+                    <h:outputText value="#{audit.faceUser.personalInformation.age}"/>
+                </p:column>
+                <p:column headerText="Genero">
+                    <h:outputText value="#{audit.faceUser.personalInformation.gender.name}"/>
+                </p:column>
+                <p:column headerText="Intruso">
+                    <h:outputText value="#{audit.intruder.description}"/>
+                </p:column>
+                <p:column headerText="Imagen">
+                    <p:commandButton styleClass="ui-button-raised ui-button-flat"
+                                     rendered="#{audit.intruder.description eq 'Yes'}" title="Ver imagen"
+                                     action="#{imageController.openDialog(audit.image)}"
+                                     oncomplete="PF('imageIntruder').show()"
+                                     update="cardImage"
+                                     icon="pi pi-image"/>
+                </p:column>
+            </p:dataTable>
+
+            <div class="flex justify-content-end">
+                <div class="flex align-items-center justify-content-center m-2"><p:commandButton value="Atras"
+                                                                                                 id="cancelar"
+                                                                                                 process="@this"
+                                                                                                 immediate="true"
+                                                                                                 action="#{loginController.redirect('/login')}"
+                                                                                                 iconPos="right"
+                                                                                                 styleClass="ui-button-raised ui-button-danger"
+                                                                                                 icon="pi pi-arrow-circle-left">
+
+                </p:commandButton>
+                </div>
+            </div>
+            <p:dialog id="imageIntruder"
+                      widgetVar="imageIntruder"
+                      cache="false"
+                      closeOnEscape="true"
+                      resizable="true"
+                      onShow="PF('imageIntruder').initPosition()"
+                      position="center,top"
+                      responsive="true">
+                <p:ajax event="close" listener="#{imageController.clean()}"/>
+                <p:card id="cardImage">
+                    <p:graphicImage value="#{imageController.imageIntruder}"
+                                    cache="false"/>
+                </p:card>
+            </p:dialog>
+        </h:body>
+
+    </ui:define>
+
+</ui:composition>

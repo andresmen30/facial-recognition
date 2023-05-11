@@ -1,0 +1,71 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="pages/template.xhtml">
+    <ui:define name="title">Reconocimiento facial</ui:define>
+    <ui:define name="content">
+        <h:body id="login-wrapper" onload="#{loginController.onload()}">
+            <h:form prependId="false">
+                <p:card id="cardWizard" styleClass="login-wrapper">
+                    <div class="flex justify-content-end">
+                        <div class="flex align-items-center justify-content-center m-2"><p:commandButton id="buttonEye"
+                                                                                                         widgetVar="buttonEye"
+                                                                                                         iconPos="right"
+                                                                                                         icon="#{loginController.attached ? 'pi pi-eye-slash' : 'pi pi-eye'}"
+                                                                                                         value="#{loginController.attached ? 'Apagar camara' : 'Encender camara'}"
+                                                                                                         styleClass="ui-button-raised ui-button-flat"
+                                                                                                         update="buttonEye, messages, photoCam, registrarse, previewPhotoCam"
+                                                                                                         action="#{loginController.sleep()}"
+                                                                                                         oncomplete="openCam()"
+                        /></div>
+                        <div class="flex align-items-center justify-content-center m-2"><p:commandButton value="Registrarse"
+                                                                                                         id="registrarse"
+                                                                                                         process="@this"
+                                                                                                         immediate="true"
+                                                                                                         action="#{loginController.redirect('/register')}"
+                                                                                                         iconPos="right"
+                                                                                                         styleClass="ui-button-raised ui-button-success ui-button-flat"
+                                                                                                         icon="pi pi-plus">
+
+                        </p:commandButton>
+                        </div>
+                    </div>
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-md-12 ui-g-nopad">
+                            <div class="ui-g-12">
+                                <p:progressBar id="progressBarClient"
+                                               mode="indeterminate"
+                                               widgetVar="pbClient" style="width:100%" styleClass="mt-3"/>
+                            </div>
+                            <div class="ui-g-12 ui-g-nopad">
+                                <div class="ui-g">
+                                    <div id="photoCamPanel"
+                                         class="ui-g-12 ui-md-12" style="text-align: center">
+                                        <p:messages id="messages"
+                                                    widgetVar="messages"
+                                                    showSummary="true"
+                                                    showDetail="true"
+                                                    style="width: 100%;"
+                                                    closable="false"/>
+                                        <p:photoCam id="photoCam" widgetVar="photoCam" autoStart="false"
+                                                    update="messages, buttonEye"
+                                                    style="display: none"
+                                                    width="600" height="400"
+                                                    listener="#{loginController.onCapture}"/>
+                                        <p:graphicImage name="#{loginController.attached ? 'eye-scan.gif' : 'sleep.gif'}"
+                                                        id="previewPhotoCam" width="600" height="400"
+                                                        cache="false"
+                                                        library="gif"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:card>
+            </h:form>
+
+        </h:body>
+    </ui:define>
+
+</ui:composition>
