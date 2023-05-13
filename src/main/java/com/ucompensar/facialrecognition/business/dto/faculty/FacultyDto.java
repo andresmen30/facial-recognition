@@ -3,7 +3,6 @@ package com.ucompensar.facialrecognition.business.dto.faculty;
 import java.util.List;
 
 import com.ucompensar.facialrecognition.business.dto.collegecareer.CollegeCareerDto;
-import com.ucompensar.facialrecognition.infrastructure.entity.CollegeCareer;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -42,4 +42,9 @@ public class AttributeFaceServiceImpl implements AttributeFaceService {
       return attributesFaceMapper.toDto(attributesFaces);
    }
 
+   @Override
+   public void save(AttributesFaceDto attributesFaceDto) {
+      attributeFaceRepository.save(attributesFaceMapper.toEntity(attributesFaceDto));
+   }
+
 }

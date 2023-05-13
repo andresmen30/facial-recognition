@@ -137,7 +137,7 @@ public class RegisterController {
    public void sleepUserCapture() throws InterruptedException {
       final PrimeFaces current = PrimeFaces.current();
       current.executeScript("photCamCapture()");
-      TimeUnit.SECONDS.sleep(2);
+      TimeUnit.SECONDS.sleep(3);
    }
 
    public String save() {
@@ -190,6 +190,7 @@ public class RegisterController {
             attached = !attached;
             current.executeScript("succesRegister()");
             current.ajax().update("photoCamUser");
+            current.ajax().update("previewPhotoCam");
             FacesContext
                   .getCurrentInstance()
                   .addMessage("messagesUser", new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Se ha registrado la imagen correctamente"));

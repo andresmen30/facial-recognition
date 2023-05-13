@@ -1,7 +1,5 @@
 package com.ucompensar.facialrecognition.business.dto.faceuser;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

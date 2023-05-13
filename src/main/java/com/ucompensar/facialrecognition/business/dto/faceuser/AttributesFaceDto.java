@@ -37,6 +37,8 @@ public class AttributesFaceDto {
 
    private Double smile;
 
+   private String detectedEmotion;
+
    private DecisionEnum intruder;
 
    private FaceUserDto faceUser;

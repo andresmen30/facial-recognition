@@ -47,6 +47,4 @@ public class ImageController implements Serializable {
       }
    }
 
-
-
 }

@@ -122,7 +122,7 @@ public class LoginController implements Serializable {
       final PrimeFaces current = PrimeFaces.current();
       if (detect.getFaceNum() == NumberUtils.INTEGER_ONE) {
          final ResultDto searchIntruder = facePlusService.search(imgBase64, this.faceSetsTokenIntruder);
-         if (searchIntruder == null) {
+         if (searchIntruder == null || searchIntruder.getConfidence() <= this.probability) {
             final ResultDto resultDto = facePlusService.search(imgBase64, this.faceSetsToken);
             if (resultDto.getConfidence() >= this.probability) {
                retry = NumberUtils.INTEGER_ZERO;

@@ -14,4 +14,6 @@ public interface AttributeFaceService {
 
    List<AttributesFaceDto> getAllPaginator(final PageRequest pageable);
 
+   void save(final AttributesFaceDto attributesFaceDto);
+
 }
