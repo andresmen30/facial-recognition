@@ -29,7 +29,6 @@ public class RewriteFacesConfig extends HttpConfigurationProvider {
             .begin()
             .addRule(Join.path(this.basePathName.concat("/login")).to("/login.xhtml").withInboundCorrection())
             .addRule(Join.path(this.basePathName.concat("/register")).to("/registerUser.xhtml"))
-            .addRule(Join.path(this.basePathName.concat("/users")).to("/users.xhtml"))
             .addRule(Join.path(this.basePathName.concat("/audit")).to("/audit.xhtml"))
             .addRule(Join.path(this.basePathName.concat(this.basePatHome).concat("/report")).to("/pages/report.xhtml"));
    }

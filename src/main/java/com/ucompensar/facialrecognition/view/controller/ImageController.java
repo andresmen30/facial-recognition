@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
-import org.springframework.web.context.annotation.ApplicationScope;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ApplicationScope
+@ApplicationScoped
 @Named
 public class ImageController implements Serializable {
 

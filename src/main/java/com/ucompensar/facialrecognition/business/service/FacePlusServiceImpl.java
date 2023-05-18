@@ -37,4 +37,9 @@ public class FacePlusServiceImpl implements FacePlusService {
    public void addFace(final String tokenId, final String faceSetToken) {
       facePlusClient.addFace(tokenId, faceSetToken);
    }
+
+   @Override
+   public void removeFace(final String faceToken, final String faceSetToken) {
+      facePlusClient.removeFace(faceToken, faceSetToken);
+   }
 }

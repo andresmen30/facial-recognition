@@ -18,7 +18,8 @@ public class FacePlusClient {
 
    private static final String ENDPOINT_SEARCH = "/search";
 
-   private static final String ENDPOINT_ADD_FACE = "/faceset/addface";
+   private static final String ENDPOINT_ADD_FACE = "/faceset/async/addface";
+   private static final String ENDPOINT_REMOVE_FACE = "/faceset/removeface";
 
    private static final String PARAM_API_KEY = "api_key";
 
@@ -87,6 +88,21 @@ public class FacePlusClient {
             .getWebClient()
             .post()
             .uri(ENDPOINT_ADD_FACE)
+            .body(BodyInserters
+                  .fromFormData(PARAM_API_KEY, this.apiKey)
+                  .with(PARAM_API_SECRET, this.apiSecret)
+                  .with(PARAM_FACE_TOKENS, faceToken)
+                  .with(PARAM_FACE_SET_TOKEN, faceSetToken))
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
+   }
+
+   public void removeFace(final String faceToken, final String faceSetToken) {
+      this
+            .getWebClient()
+            .post()
+            .uri(ENDPOINT_REMOVE_FACE)
             .body(BodyInserters
                   .fromFormData(PARAM_API_KEY, this.apiKey)
                   .with(PARAM_API_SECRET, this.apiSecret)

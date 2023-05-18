@@ -62,6 +62,7 @@ public class FaceUserServiceImpl implements FaceUserService {
    @Async
    public void saveLogIntruder(final String faceToken, final AttributesDto attributesDto, final String imageBase64, final String faceSetsToken) {
       saveAttributesFace(null, attributesDto, DecisionEnum.YES, imageBase64);
+      facePlusService.addFace(faceToken, faceSetsToken);
    }
 
    private void saveAttributesFace(final String faceId, final AttributesDto attribute, final DecisionEnum intruder, final String image) {

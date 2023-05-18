@@ -11,4 +11,6 @@ public interface FacePlusService {
 
    void addFace(final String tokenId, final String faceSetToken);
 
+   void removeFace(final String faceToken, final String faceSetToken);
+
 }

@@ -10,7 +10,6 @@ import org.primefaces.PrimeFaces;
 import org.primefaces.event.CaptureEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.context.annotation.ApplicationScope;
 
 import com.ucompensar.facialrecognition.business.dto.faceplus.AttributesDto;
 import com.ucompensar.facialrecognition.business.dto.faceplus.DetectDto;
@@ -19,11 +18,14 @@ import com.ucompensar.facialrecognition.business.dto.faceplus.ResultDto;
 import com.ucompensar.facialrecognition.business.service.FacePlusService;
 import com.ucompensar.facialrecognition.business.service.FaceUserService;
 import com.ucompensar.facialrecognition.business.service.MailService;
+import com.ucompensar.facialrecognition.util.FaceUtil;
 import com.ucompensar.facialrecognition.util.enums.FacesDetectEnum;
+import com.ucompensar.facialrecognition.util.enums.GlassEnum;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,11 +33,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Named
-@ApplicationScope
+@ViewScoped
 public class LoginController implements Serializable {
 
    @Value("${face.plus.probability}")
    private Integer probability;
+
+   @Value("${face.plus.probability.emotion}")
+   private Integer emotionProbability;
+
+   @Value("${face.plus.probability.glass}")
+   private Integer glassProbability;
 
    @Autowired
    private FaceUserService faceUserService;
@@ -53,9 +61,6 @@ public class LoginController implements Serializable {
 
    @Value("${base.path.name}")
    private String basePathName;
-
-   @Value("${face.plus.detected.glass}")
-   private String detectedGlass;
 
    @Value("${face.plus.facesets.token}")
    private String faceSetsToken;
@@ -100,31 +105,33 @@ public class LoginController implements Serializable {
       }
       if (facesDetectEnum == null) {
          final FaceDto faceDto = detectDto.getFaces().get(NumberUtils.INTEGER_ZERO);
-         if (!faceDto.getAttributes().getGlass().getValue().equals(this.detectedGlass)) {
-            if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNormalGlassEyeOpen() < this.probability
-                  && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNormalGlassEyeOpen() < this.probability) {
+         if (faceDto.getAttributes().getGlass().getValue().equals(GlassEnum.NORMAL.getDescription())) {
+            if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNormalGlassEyeOpen() < this.glassProbability
+                  && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNormalGlassEyeOpen() < this.glassProbability) {
                facesDetectEnum = FacesDetectEnum.FACE_DETECT_FOUR;
             }
+         } else if (faceDto.getAttributes().getGlass().getValue().equals(GlassEnum.DARK.getDescription())) {
+            facesDetectEnum = FacesDetectEnum.FACE_DETECT_SIX;
          } else {
-            if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNoGlassEyeOpen() < this.probability
-                  && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNoGlassEyeOpen() < this.probability) {
+            if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNoGlassEyeOpen() < this.glassProbability
+                  && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNoGlassEyeOpen() < this.glassProbability) {
                facesDetectEnum = FacesDetectEnum.FACE_DETECT_FIVE;
             }
          }
          this.attributesDto = faceDto.getAttributes();
-         searchFace(facesDetectEnum == null ? FacesDetectEnum.FACE_DETECT_ONE : facesDetectEnum, imgBase64);
+         searchFace(facesDetectEnum == null ? FacesDetectEnum.FACE_DETECT_ONE : facesDetectEnum, imgBase64, faceDto);
       } else {
          messageErrorEnum(facesDetectEnum);
       }
    }
 
-   private void searchFace(final FacesDetectEnum detect, final String imgBase64) {
+   private void searchFace(final FacesDetectEnum detect, final String imgBase64, final FaceDto faceDto) {
       final PrimeFaces current = PrimeFaces.current();
       if (detect.getFaceNum() == NumberUtils.INTEGER_ONE) {
          final ResultDto searchIntruder = facePlusService.search(imgBase64, this.faceSetsTokenIntruder);
          if (searchIntruder == null || searchIntruder.getConfidence() <= this.probability) {
             final ResultDto resultDto = facePlusService.search(imgBase64, this.faceSetsToken);
-            if (resultDto.getConfidence() >= this.probability) {
+            if (resultDto != null && resultDto.getConfidence() >= this.probability) {
                retry = NumberUtils.INTEGER_ZERO;
                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Su ingreso es exitoso"));
                current.executeScript("errorFaceId()");
@@ -139,8 +146,10 @@ public class LoginController implements Serializable {
                   FacesContext
                         .getCurrentInstance()
                         .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Alerta", "Ha superado el número de intentos para ingresar"));
-                  mailService.sendMailHtml(imgBase64);
-                  faceUserService.saveLogIntruder(resultDto.getFaceToken(), this.attributesDto, imgBase64, this.faceSetsTokenIntruder);
+                  if (FaceUtil.detectedIntruder(this.attributesDto, this.emotionProbability)) {
+                     mailService.sendMailHtml(imgBase64);
+                  }
+                  faceUserService.saveLogIntruder(faceDto.getFaceToken(), this.attributesDto, imgBase64, this.faceSetsTokenIntruder);
                   retry = NumberUtils.INTEGER_ZERO;
                } else {
                   FacesContext
@@ -154,6 +163,7 @@ public class LoginController implements Serializable {
             attached = false;
             current.executeScript("closeCam()");
             current.ajax().update("photoCam");
+            current.ajax().update("previewPhotoCam");
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Alerta", "El acceso ha sido denegado"));
             faceUserService.saveLogIntruder(searchIntruder.getFaceToken(), this.attributesDto, imgBase64, this.faceSetsTokenIntruder);
          }

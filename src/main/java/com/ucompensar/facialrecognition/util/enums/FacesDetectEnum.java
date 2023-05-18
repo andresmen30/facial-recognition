@@ -13,6 +13,7 @@ public enum FacesDetectEnum {
    FACE_DETECT_THREE(3, "No se ha procesado la detección del rostro, por favor procure no moverse"),
    FACE_DETECT_FOUR(4, "Al tener gafas, por favor no cerrar los ojos"),
    FACE_DETECT_FIVE(5, "Por favor no cerrar los ojos"),
+   FACE_DETECT_SIX(6, "Por favor no utilizar gafas oscuras"),
    FACE_DETECT_ERROR(10, "Error al leer el rostro");
 
    private final int faceNum;
