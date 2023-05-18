@@ -1,11 +1,13 @@
 package com.ucompensar.facialrecognition.view.controller;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ocpsoft.rewrite.faces.navigate.Navigate;
 import org.primefaces.PrimeFaces;
@@ -26,6 +28,7 @@ import com.ucompensar.facialrecognition.business.service.FaceUserService;
 import com.ucompensar.facialrecognition.business.service.FacultyService;
 import com.ucompensar.facialrecognition.util.enums.FacesDetectEnum;
 import com.ucompensar.facialrecognition.util.enums.GenderEnum;
+import com.ucompensar.facialrecognition.util.enums.GlassEnum;
 import com.ucompensar.facialrecognition.util.enums.IdTypeEnum;
 
 import jakarta.annotation.PostConstruct;
@@ -40,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ViewScoped
 @Named
-public class RegisterController {
+public class RegisterController implements Serializable {
 
    @Autowired
    private FacePlusService facePlusService;
@@ -84,9 +87,6 @@ public class RegisterController {
    @Value("${face.plus.probability}")
    private Integer probability;
 
-   @Value("${face.plus.detected.glass}")
-   private String detectedGlass;
-
    @Getter
    @Setter
    private int retry;
@@ -98,8 +98,15 @@ public class RegisterController {
    @Value("${face.plus.facesets.token}")
    private String faceSetsToken;
 
+   @Value("${face.plus.facesets.intruder.token}")
+   private String faceSetTokeIntruder;
+
    @PostConstruct
    public void init() {
+      onload();
+   }
+
+   public void onload() {
       attached = false;
       imageBase65 = null;
       faceDto = null;
@@ -108,6 +115,7 @@ public class RegisterController {
       facultyDtos = facultyService.findAll();
       idTypeEnums = Arrays.asList(IdTypeEnum.values());
       genderEnums = Arrays.asList(GenderEnum.values());
+      PrimeFaces.current().executeScript("onloadRegisterUser()");
    }
 
    public void onCollageCareerChange() {
@@ -128,21 +136,25 @@ public class RegisterController {
       TimeUnit.SECONDS.sleep(2);
    }
 
-   public void sleepImageClear() throws InterruptedException {
-      attached = false;
-      imageBase65 = null;
-      TimeUnit.SECONDS.sleep(2);
-   }
-
    public void sleepUserCapture() throws InterruptedException {
       final PrimeFaces current = PrimeFaces.current();
       current.executeScript("photCamCapture()");
-      TimeUnit.SECONDS.sleep(2);
+      TimeUnit.SECONDS.sleep(5);
    }
 
    public String save() {
-      faceUserService.save(this.faceUserDto, this.faceDto, this.imageBase65, this.faceSetsToken);
-      return Navigate.to(this.basePathName.concat("/login")).build();
+      if (StringUtils.isNotEmpty(this.imageBase65)) {
+         final ResultDto resultDto = facePlusService.search(this.imageBase65, this.faceSetTokeIntruder);
+         if (resultDto != null && resultDto.getConfidence() >= this.probability) {
+            facePlusService.removeFace(resultDto.getFaceToken(), this.faceSetTokeIntruder);
+         }
+         faceUserService.save(this.faceUserDto, this.faceDto, this.imageBase65, this.faceSetsToken);
+         return Navigate.to(this.basePathName.concat("/login")).build();
+      }
+      FacesContext
+            .getCurrentInstance()
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Debe tomarse una foto para el registro"));
+      return StringUtils.EMPTY;
    }
 
    public void onCapture(CaptureEvent captureEvent) {
@@ -161,11 +173,13 @@ public class RegisterController {
       }
 
       final FaceDto faceDto = detectDto.getFaces().get(NumberUtils.INTEGER_ZERO);
-      if (!faceDto.getAttributes().getGlass().getValue().equals(this.detectedGlass)) {
+      if (faceDto.getAttributes().getGlass().getValue().equals(GlassEnum.NORMAL.getDescription())) {
          if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNormalGlassEyeOpen() < this.probability
                && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNormalGlassEyeOpen() < this.probability) {
             facesDetectEnum = FacesDetectEnum.FACE_DETECT_FOUR;
          }
+      } else if (faceDto.getAttributes().getGlass().getValue().equals(GlassEnum.DARK.getDescription())) {
+         facesDetectEnum = FacesDetectEnum.FACE_DETECT_SIX;
       } else {
          if (faceDto.getAttributes().getEyestatusDto().getRightEyeStatus().getNoGlassEyeOpen() < this.probability
                && faceDto.getAttributes().getEyestatusDto().getLeftEyeStatus().getNoGlassEyeOpen() < this.probability) {
@@ -181,7 +195,7 @@ public class RegisterController {
          if (resultDto != null && resultDto.getConfidence() >= this.probability) {
             FacesContext
                   .getCurrentInstance()
-                  .addMessage("messagesUser", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe en el sistema"));
+                  .addMessage("messages", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Ya existe en el sistema"));
          } else {
             final PrimeFaces current = PrimeFaces.current();
             this.faceUserDto.setFaceToken(faceDto.getFaceToken());
@@ -190,9 +204,10 @@ public class RegisterController {
             attached = !attached;
             current.executeScript("succesRegister()");
             current.ajax().update("photoCamUser");
+            current.ajax().update("previewPhotoCam");
             FacesContext
                   .getCurrentInstance()
-                  .addMessage("messagesUser", new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Se ha registrado la imagen correctamente"));
+                  .addMessage("messages", new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Se ha registrado la imagen correctamente"));
          }
       } else {
          FacesContext.getCurrentInstance().addMessage("messagesUser", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", detect.getMessage()));

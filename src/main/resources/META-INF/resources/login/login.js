@@ -13,7 +13,6 @@ function openCam() {
 
 function openCamSaveUser() {
     jQuery('#messagesUser').hide();
-    PF('buttonCapture').enable();
     let photoCam = PF('photoCamUser');
     if (photoCam.attached) {
         photoCam.detach();
@@ -24,8 +23,8 @@ function openCamSaveUser() {
 }
 
 function photCamCapture() {
-    PF('buttonEye').enable();
     PF('photoCamUser').capture();
+    PF('buttonEye').enable();
 }
 
 function captureUser() {
@@ -48,8 +47,6 @@ function closeCam() {
 
 function onloadRegisterUser() {
     closeCamUser();
-    PF('buttonClearImage').disable();
-    PF('buttonCapture').disable();
 }
 
 function closeCamUser() {
@@ -92,8 +89,10 @@ function successFaceId() {
 function succesRegister() {
     PF('buttonCapture').disable();
     PF('buttonEye').disable();
-    PF('buttonClearImage').enable();
     closeCamUser();
+}
+
+function retryRegisterPhotoCam() {
     let delay = 4000;
     let func = setTimeout(function request() {
         jQuery('#messagesUser').hide();
@@ -101,8 +100,8 @@ function succesRegister() {
     }, delay);
 }
 
+
 function clearImage() {
-    PF('buttonClearImage').disable();
     PF('buttonCapture').disable();
     PF('buttonEye').enable();
 }

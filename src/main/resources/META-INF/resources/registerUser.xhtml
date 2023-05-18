@@ -8,7 +8,7 @@
     <ui:define name="content">
 
 
-        <h:body id="login-wrapper" onload="onloadRegisterUser()">
+        <h:body id="login-wrapper" onload="#{registerController.onload()}">
             <p:card id="cardWizard" styleClass="login-wrapper">
                 <h:form id="formRegister" prependId="false">
                     <p:panel id="panelPersonal" header="Datos personales">
@@ -119,11 +119,9 @@
                         </div>
                     </p:panel>
                     <p:panel id="panelFacialRecognition" style="text-align: center" header="Reconocimiento facial">
-
                         <p:messages id="messagesUser"
                                     globalOnly="false"
                                     widgetVar="messagesUser"
-                                    rendered="#{!facesContext.validationFailed}"
                                     showSummary="true"
                                     showDetail="true"
                                     style="width: 100%;"
@@ -132,6 +130,7 @@
                         <p:photoCam id="photoCamUser" widgetVar="photoCamUser" autoStart="false"
                                     width="600" height="400"
                                     style="display: none"
+                                    value="#{registerController.imageIntruder}"
                                     update="messagesUser"
                                     listener="#{registerController.onCapture}"/>
                         <p:graphicImage name="#{registerController.attached ? 'eye-scan.gif' : 'sleep.gif'}"
@@ -139,27 +138,16 @@
                                         cache="false"
                                         library="gif"/>
                         <div class="flex justify-content-end">
-                            <div class="flex align-items-center justify-content-center m-2"><p:commandButton id="buttonClearImage"
-                                                                                                             widgetVar="buttonClearImage"
-                                                                                                             immediate="true"
-                                                                                                             iconPos="right"
-                                                                                                             icon="pi pi-trash"
-                                                                                                             value="eliminar imagen"
-                                                                                                             styleClass="ui-button-raised ui-button-flat ui-button-danger"
-                                                                                                             update="buttonClearImage, buttonEye, photoCamUser"
-                                                                                                             action="#{registerController.sleepImageClear()}"
-                                                                                                             oncomplete="clearImage()"
-                            />
-                            </div>
                             <div class="flex align-items-center justify-content-center m-2"><p:commandButton id="buttonEye"
                                                                                                              widgetVar="buttonEye"
                                                                                                              immediate="true"
+                                                                                                             process="@this"
                                                                                                              onclick="captureEye()"
                                                                                                              iconPos="right"
                                                                                                              icon="#{registerController.attached ? 'pi pi-eye-slash' : 'pi pi-eye'}"
                                                                                                              value="#{registerController.attached ? 'Apagar camara' : 'Encender camara'}"
                                                                                                              styleClass="ui-button-raised ui-button-flat"
-                                                                                                             update="buttonEye, photoCamUser, previewPhotoCam"
+                                                                                                             update="buttonEye, photoCamUser, previewPhotoCam, buttonCapture"
                                                                                                              action="#{registerController.sleep()}"
                                                                                                              oncomplete="openCamSaveUser()"
                             />
@@ -167,6 +155,7 @@
                             <div class="flex align-items-center justify-content-center m-2"><p:commandButton id="buttonCapture"
                                                                                                              widgetVar="buttonCapture"
                                                                                                              immediate="true"
+                                                                                                             process="@this"
                                                                                                              iconPos="right"
                                                                                                              disabled="${!registerController.attached}"
                                                                                                              onclick="captureUser()"
@@ -192,6 +181,7 @@
                         </p:commandButton>
                         </div>
                         <div class="flex align-items-center justify-content-center m-2"><p:commandButton value="Guardar"
+                                                                                                         id="saveButton"
                                                                                                          update="formRegister:panelPersonal, formRegister:panelUniversity, formRegister:previewPhotoCam"
                                                                                                          iconPos="right"
                                                                                                          icon="pi pi-save"
