@@ -19,7 +19,7 @@ _Estas instrucciones te permitirán obtener una copia del proyecto en funcionami
 
 * _JDK 11 -> [Descargar JDK 17]([https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html))_
 * _Proyecto Spring boot de prueba -> [Iniciar un proyecto Spring Boot](https://start.spring.io/)_
-* _Framework JoinFaces -> [Documentación]([https://start.spring.io/](http://joinfaces.org/))_
+* _Framework JoinFaces -> [Documentación](https://start.spring.io/](http://joinfaces.org/)_
 
 
 
